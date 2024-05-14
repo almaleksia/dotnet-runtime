@@ -1,0 +1,70 @@
+diff --git a/src/libraries/System.Private.CoreLib/src/System.Private.CoreLib.Shared.projitems b/src/libraries/System.Private.CoreLib/src/System.Private.CoreLib.Shared.projitems
+index ce22178ca8a0..16c9cf15ed0f 100644
+--- a/src/libraries/System.Private.CoreLib/src/System.Private.CoreLib.Shared.projitems
++++ b/src/libraries/System.Private.CoreLib/src/System.Private.CoreLib.Shared.projitems
+@@ -877,6 +877,7 @@
+     <Compile Include="$(MSBuildThisFileDirectory)System\Runtime\CompilerServices\PoolingAsyncValueTaskMethodBuilder.cs" />
+     <Compile Include="$(MSBuildThisFileDirectory)System\Runtime\CompilerServices\PoolingAsyncValueTaskMethodBuilderT.cs" />
+     <Compile Include="$(MSBuildThisFileDirectory)System\Runtime\CompilerServices\PreserveBaseOverridesAttribute.cs" />
++    <Compile Include="$(MSBuildThisFileDirectory)System\Runtime\CompilerServices\OverloadResolutionPriorityAttribute.cs" />
+     <Compile Include="$(MSBuildThisFileDirectory)System\Runtime\CompilerServices\RefSafetyRulesAttribute.cs" />
+     <Compile Include="$(MSBuildThisFileDirectory)System\Runtime\CompilerServices\RequiredMemberAttribute.cs" />
+     <Compile Include="$(MSBuildThisFileDirectory)System\Runtime\CompilerServices\RequiresLocationAttribute.cs" />
+diff --git a/src/libraries/System.Private.CoreLib/src/System/Runtime/CompilerServices/OverloadResolutionPriorityAttribute.cs b/src/libraries/System.Private.CoreLib/src/System/Runtime/CompilerServices/OverloadResolutionPriorityAttribute.cs
+new file mode 100644
+index 000000000000..13f8cf1b9963
+--- /dev/null
++++ b/src/libraries/System.Private.CoreLib/src/System/Runtime/CompilerServices/OverloadResolutionPriorityAttribute.cs
+@@ -0,0 +1,17 @@
++// Licensed to the .NET Foundation under one or more agreements.
++// The .NET Foundation licenses this file to you under the MIT license.
++
++namespace System.Runtime.CompilerServices
++{
++    /// <summary>
++    /// Specifies the priority of a member in overload resolution. When unspecified, the default priority is 0.
++    /// </summary>
++    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
++    public sealed class OverloadResolutionPriorityAttribute(int priority) : Attribute
++    {
++        /// <summary>
++        /// The priority of the member.
++        /// </summary>
++        public int Priority { get; } = priority;
++    }
++}
+diff --git a/src/libraries/System.Runtime/ref/System.Runtime.cs b/src/libraries/System.Runtime/ref/System.Runtime.cs
+index a3f2a4b07e2f..fcfa67c001d8 100644
+--- a/src/libraries/System.Runtime/ref/System.Runtime.cs
++++ b/src/libraries/System.Runtime/ref/System.Runtime.cs
+@@ -13091,6 +13091,12 @@ public sealed partial class NullablePublicOnlyAttribute : System.Attribute
+         public readonly bool IncludesInternals;
+         public NullablePublicOnlyAttribute(bool value) { }
+     }
++    [System.AttributeUsageAttribute(System.AttributeTargets.Method | System.AttributeTargets.Constructor | System.AttributeTargets.Property, AllowMultiple=false, Inherited=false)]
++    public sealed partial class OverloadResolutionPriorityAttribute : System.Attribute
++    {
++        public OverloadResolutionPriorityAttribute(int priority) { }
++		public int Priority { get { throw null; } }
++    }
+     [System.AttributeUsageAttribute(System.AttributeTargets.Parameter, Inherited = true, AllowMultiple = false)]
+     public sealed partial class ParamCollectionAttribute : System.Attribute
+     {
+diff --git a/src/libraries/System.Runtime/tests/System.Runtime.Tests/System/Runtime/CompilerServices/AttributesTests.cs b/src/libraries/System.Runtime/tests/System.Runtime.Tests/System/Runtime/CompilerServices/AttributesTests.cs
+index 6f58cc48e5bf..bb7539a4e357 100644
+--- a/src/libraries/System.Runtime/tests/System.Runtime.Tests/System/Runtime/CompilerServices/AttributesTests.cs
++++ b/src/libraries/System.Runtime/tests/System.Runtime.Tests/System/Runtime/CompilerServices/AttributesTests.cs
+@@ -399,5 +399,12 @@ public static void RequiresLocationAttributeTests()
+         {
+             new RequiresLocationAttribute();
+         }
++
++        [Fact]
++        public static void OverloadResolutionPriorityAttributeTests()
++        {
++            var attr = new OverloadResolutionPriorityAttribute(42);
++            Assert.Equal(42, attr.Priority);
++        }
+     }
+ }
+ \No new line at the end of file
